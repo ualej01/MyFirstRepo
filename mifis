@@ -1,357 +1,345 @@
 <!DOCTYPE html>
 <html>
     <!-- 
-        TODO
-        - function status message generator
-        - if pdf form open dont refresh until saved/signed
-	- CLEAN CODE. var names, css condensing
+        TO DO (temporary notes)
+        - function status message generator/ color code
+            - function progress bar
+        - function place new content in specified row
+        - function add/remove mifi 
+        - CLEAN CODE. var names, css condensing
     -->
-    <head>
-        <!-- LOCAL HTA COMPATIBLE -->
-        <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
-        <!-- REFRESH PAGE EVERY 30 SECONDS -->
-        <meta http-equiv="refresh" content="30"/>
-        <title>File Utility</title>
-        <HTA:APPLICATION
-            APPLICATIONNAME="File Utility"
-            ID="hta_utility"
-            border            = "none"
-            borderStyle        = "none"
-            caption            = "yes"
-            contextMenu        = "no"
-            maximizeButton    = "yes"
-            minimizeButton    = "yes"
-            navigable        = "no"
-            showInTaskbar    = "yes"
-            singleInstance    = "yes"
-            scroll = "no"
-            sysmenu            = "yes"
-            VERSION="1.0"
-            WINDOWSTATE        = "maximize"
-            />
 
-        <!-- STYLE | Colors | Sizes -->
-        <style type="text/css">
-            body,html{
-                font-family: "Century Gothic", CenturyGothic, sans-serif;
-                width: 100%;
-                height: 100%;
-                padding: 0;
-                margin: 0;
-                box-sizing: border-box;
-            }
-        
+<head>
+    <!-- FOR LOCAL COMPATABILITY -->
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
 
-            .rowStyle{
-                width:100%;
-                /* background-color: #ccc; */
-                margin-bottom: 1px;
-                /* background-color: brown; */
-            }
+    <!-- REFRESH PAGE EVERY 60 MINUTES -->
+    <!-- <meta http-equiv="refresh" content="3600"/> -->
 
-            .rowStyle:before,
-            .rowStyle:after {
-                content:"";
-                display: table ;
-                clear:both;
-            }
+    <title>Mifi Manager</title>
 
-            .cHeadStyle{
-                background-color: rgb(21, 112, 148);
-                color: white;
-                padding: 10px 10px 10px 10px;
-            }
-            
-            .cIDStyle{
-                background-color: rgb(245, 245, 245);
-                padding: 10px 10px 10px 10px;
-            }
-            
-            .cDataStyle{
-                background-color: rgb(245, 245, 245);
-                padding: 10px 10px 10px 10px;
-            }
-            
-            .cbtnStyle{
-                /* margin: 10px 0 0 0; */
-                height:39px;
-                /* padding: 3px 0 3px 0; */
-                /* background-color: black; */
-                text-align: center;
-                }
-            
-            .btn-1{
-                width:100%;
-                background-color: rgb(175, 175, 175);
-                border: none;
-                color: white;
-                padding: 11px 0 11px 0;
-                text-align: center;
-                text-decoration: none;
-                display: inline-block;
-                font-size: 14px;
-                cursor: pointer;
-                border-radius: 4px;    
-            }
-            .btn-1:hover{
-                background-color: rgb(125, 125, 125);
-            }
-            .col-1{
-                box-sizing: border-box;
-                float: left;
-                width:calc((100%/6) - 1.01px);
-                margin: 0 1px 0 0;    
-            }
-            #pdfframe {
-                width: 100%;
-                height: 94.5vh;
-            }
+    <HTA:APPLICATION 
+        APPLICATIONNAME="Mifi Manager" 
+            ID="hta_utility" border="none" 
+            borderStyle="none" caption="yes"
+            contextMenu="no" 
+            maximizeButton="yes" 
+            minimizeButton="yes" 
+            navigable="no" 
+            showInTaskbar="yes"
+            singleInstance="yes" 
+            scroll="no" 
+            sysmenu="yes" 
+            VERSION="1.0" 
+            WINDOWSTATE="maximize"></HTA:APPLICATION>
 
+    <!-- VISUAL STYLE | Colors | Dimensions -->
+    <style type="text/css">
+        /**************** General Styling ****************/
+        body,
+        html {
+            font-family: "Century Gothic", CenturyGothic, sans-serif;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        /**************** Table Styling ****************/
+        .rowStyle {
+            width: 100%;
+            margin-bottom: 1px;
+        }
+        .rowStyle:before,
+        .rowStyle:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        .cHeadStyle {
+            background-color: rgb(21, 112, 148);
+            color: white;
+            padding: 10px 10px 10px 10px;
+        }
+        .cIDStyle {
+            background-color: rgb(245, 245, 245);
+            padding: 10px 10px 10px 10px;
+        }
+        .cDataStyle {
+            background-color: rgb(245, 245, 245);
+            padding: 10px 10px 10px 10px;
+        }
+        .cbtnStyle {
+            height: 39px;
+            text-align: center;
+        }
 
-            /* The Modal (background) */
-            .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1; /* Sit on top */
+        /**************** Button Style ****************/
+        .btn-1 {
+            width: 100%;
+            background-color: rgb(175, 175, 175);
+            border: none;
+            color: white;
+            padding: 11px 0 11px 0;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .btn-1:hover {
+            background-color: rgb(125, 125, 125);
+        }
+
+        /**************** Grid Dimensions ****************/
+        .col-1 {
+            box-sizing: border-box;
+            float: left;
+            width: calc((100%/6) - 1.01px);
+            margin: 0 1px 0 0;
+        }
+
+        /**************** PDF Framing ****************/
+        /* PDF frame size */
+        #pdfframe {
+            width: 100%;
+            height: 93vh;
+        }
+        /* PDF Popup (background) */
+        .modal {
+            display: none;/* Hidden by default */
+            position: fixed;/* Stay in place */
+            z-index: 1;/* Sit on top */
             left: 0;
             top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
+            width: 100%;/* Full width */
+            height: 100%;/* Full height */
             overflow: auto; /* Enable scroll if needed */
-            background-color: rgb(0,0,0); /* Fallback color */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-            }
-
-            /* Modal Content/Box */
-            .modal-content {
+            background-color: rgb(0, 0, 0); /* Fallback color */
+            background-color: rgba(0, 0, 0, 0.4);/* Black w/ opacity */
+        }
+        /* PDF Popup */
+        .modal-content {
             background-color: #fefefe;
-            margin: 0 auto; /* 15% from the top and centered */
+            margin: 0 auto;/* centered */
             padding: 20px;
             border: 1px solid #888;
-            width: 80%; /* Could be more or less, depending on screen size */
-            }
-        </style>
-    </head>
+            width: 80%;/* Could be more or less, depending on screen size */
+        }
+    </style>
+</head>
 
-    <!-- JAVASCRIPT CODE THAT RUNS ON REFRESH-->
-    <script language="Jscript" script type="text/javascript">
-        //MAIN FUNCTION: runs on button click
-        function Refresh(){
-            
-            ClearString();
-            
-             window.resizeTo(screen.availWidth,screen.availHeight);
-             window.moveTo(0,0);
-            //Changable variables
-            var FolderPath = "./output test";
-            var mifis = [
+<!-- JAVASCRIPT | runs on load-->
+<script language="Jscript" script type="text/javascript">
+
+    //MAIN FUNCTION: runs on button click and/or timer (default on)
+    function loadPage() {
+
+        //Changable variables
+        var FolderPath = "./output test";
+        var mifis = [
             "Mifi 123-123-123",
             "Mifi 321-123-123",
             "Mifi 543-123-123",
             "Mifi 987-123-123"
-            ];
+        ];
 
 
-            //keys: mifi, name, issue_date, return_date
-            var rJson = JSON.parse(ReadFile("./output test/test.json"));//calls ReadFile to read json file
+        //keys: mifi, name, issue_date, return_date
+        var rJson = JSON.parse(ReadFile("./output test/test.json"));//calls ReadFile to read json file
 
-            var rList = FileList(FolderPath);
-            var rf = ParseDelim(FileList(FolderPath));
-            var d = SortDateCreated(rf);//doesnt work
-
-            var heder = ["Mifi","Name","Issue Date", "Return Date", "Status"];
-            var cont = [rJson.name,rJson.issue_date,rJson.return_date];
-            mkTable(heder,mifis,cont);
+        var rList = FileList(FolderPath);
+        var rf = ParseDelim(FileList(FolderPath));
 
 
-            //mkTable(hdr,mifis,ct,4);
+        var heder = ["Mifi", "Name", "Issue Date", "Return Date", "Status"];
+        var cont = [rJson.name, rJson.issue_date, rJson.return_date];
 
-             //document.getElementById("txt1").innerHTML = rJson[0] + "<br>";
-             //document.getElementById("txt2").innerHTML = rf + "<br>";
-             //document.getElementById("txt2").innerHTML = d + "<br>";
-            // document.getElementById("txt3").innerHTML = rf.sort(compareByColumnIndex) + "<br>";
-             //document.getElementById("txt4").innerHTML = rf[9] + "<br>";
+        ClearPage();
+        //refreshPage(3600); //Refresh every (seconds)
 
-            
+        window.resizeTo(screen.availWidth, screen.availHeight);
+        window.moveTo(0, 0);
 
+
+        mkTable(heder, mifis, cont);
+
+
+        //mkTable(hdr,mifis,ct,4);
+
+        //document.getElementById("txt1").innerHTML = rJson[0] + "<br>";
+        //document.getElementById("txt2").innerHTML = rf + "<br>";
+        //document.getElementById("txt2").innerHTML = d + "<br>";
+        // document.getElementById("txt3").innerHTML = rf.sort(compareByColumnIndex) + "<br>";
+        //document.getElementById("txt4").innerHTML = rf[9] + "<br>";
+
+
+
+    }
+
+    //On call | list folder contents
+    function FileList(path) {
+        var fso, f, f1, fc, s, t;
+        fso = new ActiveXObject("Scripting.FileSystemObject");
+        f = fso.GetFolder(path);
+        fc = new Enumerator(f.files);
+        s = "";
+        //var i=0;
+        while (!fc.atEnd()) {
+            var d = new Date(fc.item().datelastmodified);
+            s += (fc.item().name + "\t" + d.toLocaleString());//.datecreated    Thu Feb 21 2019 19:00:58 GMT-0600 (Central Standard Time)
+            fc.moveNext();
+            if (!fc.atEnd()) { s += "\n"; }
         }
+        return s; //use s to test print files
+    }
 
-        //GOOD: Returns array of files in folder
-        function FileList(path){
-            var fso, f, f1, fc, s, t;
-            fso = new ActiveXObject("Scripting.FileSystemObject");
-            f = fso.GetFolder(path);
-            fc = new Enumerator(f.files);
-            s = "";
-            //var i=0;
-            while (!fc.atEnd()){
-                var d = new Date(fc.item().datelastmodified);
-                s += (fc.item().name + "\t" + d.toLocaleString());//.datecreated    Thu Feb 21 2019 19:00:58 GMT-0600 (Central Standard Time)
-                fc.moveNext();
-                if(!fc.atEnd()){s += "\n";}
-            }
-            return s; //use s to test print files
-        }
+    //On call | read a file given location/name
+    function ReadFile(file) {
+        var fso, f, fRead;
+        fso = new ActiveXObject("Scripting.FileSystemObject");
+        f = fso.OpentextFile(file, 1);
+        fRead = f.ReadAll();
+        fso.close;
+        return fRead;
+    }
 
-        //NOT GOOD: good but not for this....sort dates in second column of array
-        // function compareDate2ndclm(a, b) {
-        //     return new Date(b[1]) - new Date(a[1]);
-        // }
-
-        //NOT GOOD: good but not for this
-        function SortDateCreated(contToSort){
-            var cD = [];
-            var d, dt;
-            for(i=0;i<contToSort.length;i++){
-                //dt = cnvDate(contToSort[i][1]);
-                cD = cD.concat(contToSort[i]+"<br>");
-             }
-             d = cD.sort();//.reverse();//compareDate2ndclm
-             return cD;
-        }
-
-        //GOOD: parse text tab/new line delimited text into multidimensional array
-        function ParseDelim(content)
+    //On call | parse tab delmited text
+    function ParseDelim(content) {
+        var aRead, lRead, wRead;
+        var words = [], tRow = [];
+        aRead = content;// read all text
+        lRead = aRead.split("\n");//create array of lines by line break
+        for (i = 0; i < lRead.length; i++)//for every line do this
         {
-            var aRead, lRead, wRead;
-            var words = [], tRow = [];
-            aRead = content;// read all text
-            lRead = aRead.split("\n");//create array of lines by line break
-            for(i=0;i<lRead.length;i++)//for every line do this
-            {
-                words = lRead[i].split("\t");//create array of lines by tab char
-                tRow = tRow.concat([words]);//array of word arrays
-            }
-            return tRow; //return multidim array of words/"cells"
+            words = lRead[i].split("\t");//create array of lines by tab char
+            tRow = tRow.concat([words]);//array of word arrays
         }
-        //GOOD: Converts date format
-        function cnvDate(d){
-            var cDate = new Date(d);
-            var convertedDate = cDate.toLocaleString();
-            return convertedDate;
-        }
+        return tRow; //return multidim array of words/"cells"
+    }
 
-        //GOOD: Reads one file by inputing path of any file
-        function ReadFile(file){
-            var fso, f, fRead;
-            fso = new ActiveXObject("Scripting.FileSystemObject");
-            f = fso.OpentextFile(file,1);
-            fRead = f.ReadAll();
-            fso.close;
-            return fRead;
-        }
+    // //On call | convert date format to d/d/d time
+    // function cnvDate(d){
+	//             var cDate = new Date(d);
+	//             var convertedDate = cDate.toLocaleString();
+	//             return convertedDate;
+	//         }
 
-        //MAKE TABLE - INPUT (array:header labels | array: mifis | array: json data)
-        function mkTable(h,mifi,ct)
-        {
-            //var h = ["Mifi","Name","Issue Date", "Return Date"];
-            //var ct = [content.name,content.issue_date,content.return_date];
+    //On call | make table (array:header labels | array: mifis | array: json data)
+    function mkTable(h, mifi, ct) {
+        for (i = 0; i <= mifi.length; i++) {
+            //CREATE ROW
+            var newDiv = document.createElement("div");
+            newDiv.setAttribute("id", "gridRow" + i);
+            newDiv.className = "rowStyle";
+            document.getElementById("container").appendChild(newDiv);
 
-            for(i=0;i<=mifi.length;i++)
-            {   
-                //CREATE ROW
-                var newDiv = document.createElement("div");
-                newDiv.setAttribute("id", "gridRow" + i);
-                newDiv.className="rowStyle";
-                document.getElementById("container").appendChild(newDiv);
-
-                //CREATE 6 COLUMNS | C1:mifi number | C2-4:name, issue date | return date | C4:status message | C5:Button
-                for(ii=0;ii<(h.length+1);ii++){
-                    var newDivC = document.createElement("div");
-                    //newDivC.className="col-1";
-                    if(i==0){
-                        if(ii<h.length){
-                        newDivC.className="col-1 cHeadStyle";
+            //CREATE 6 COLUMNS | C1:mifi number | C2-4:name, issue date | return date | C4:status message | C5:Button
+            for (ii = 0; ii < (h.length + 1); ii++) {
+                var newDivC = document.createElement("div");
+                //newDivC.className="col-1";
+                if (i == 0) {
+                    if (ii < h.length) {
+                        newDivC.className = "col-1 cHeadStyle";
                         var newContent = document.createTextNode(h[ii]);//print header row
-                        }else{
-                            var newContent = document.createTextNode("");
-                        }
-                        
-                    }else if(ii==0 && i!=0){
-                        newDivC.className="col-1 cIDStyle";
-                        var newContent = document.createTextNode(mifi[i-1]);//in 1st column print mifi number or MIFI ID
-                    }else if(ii==5){//add button at last column
-                        newDivC.className="col-1 cbtnStyle";
-                        newContent = document.createElement("input");
-                        newContent.setAttribute("id", "rBtn" + i);
-                        newContent.className="btn-1";
-                        newContent.type="button";
-                        newContent.value="Check Out";
-                        newContent.setAttribute("onclick","CheckInPDF(this.id)");
-                    }else{
-                        newDivC.className="col-1 cDataStyle";
-                        var newContent = document.createTextNode(ct[ii-1]);//print column items
+                    } else {
+                        var newContent = document.createTextNode("");
                     }
-                    //else if(ii==4) display status message
+                } else if (ii == 0) {
+                    newDivC.className = "col-1 cIDStyle";
+                    var newContent = document.createTextNode(mifi[i - 1]);//in 1st column print mifi number or MIFI ID
+                } else if (ii == 5) {//add button at last column
+                    newDivC.className = "col-1 cbtnStyle";
+                    newContent = document.createElement("input");
+                    newContent.setAttribute("id", "rBtn" + i);
+                    newContent.className = "btn-1";
+                    newContent.type = "button";
+                    newContent.value = "Check Out";
+                    newContent.setAttribute("onclick", "CheckInPDF(this.id)");
+                }else if(ii==4){
+                    newDivC.className = "col-1 cDataStyle";
+                    var newContent = document.createTextNode("test");//status message
+                }else {
+                    newDivC.className = "col-1 cDataStyle";
+                    var newContent = document.createTextNode(ct[ii - 1]);//print column items
+                }
+                //else if(ii==4) display status message
 
-                    newDivC.appendChild(newContent);
-                    document.getElementById("gridRow"+i).appendChild(newDivC);
+                newDivC.appendChild(newContent);
+                document.getElementById("gridRow" + i).appendChild(newDivC);
+            }
+        }
+    }
+
+    //On call | display status mesage
+    function statusMsg(dates){
+        var msg;
+        //if checked out | NOT AVAILABLE
+        //if today | DUE
+        //if today or greater | PAST DUE
+        //if available | AVAILABLE
+        //PROGRESS BAR
+        return msg;
+    }
+
+    //On call | open pdf document popup
+    function CheckInPDF(btnID) {
+        var btn = document.getElementById(btnID);
+        if (btn.value == "Check Out") {
+
+            var pdf = document.createElement("iframe");
+            var modal = document.getElementById('myModal');
+
+            pdf.setAttribute("id", "pdfframe");
+            pdf.scrolling = "auto";
+            pdf.src = "./1297.2 Tablet 2.pdf";
+            document.getElementsByClassName("modal-content")[0].appendChild(pdf);
+            btn.value = "Check In";
+
+            modal.style.display = "block";
+
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                    document.getElementsByClassName("modal-content")[0].removeChild(pdf);
                 }
             }
+        } else {
+            btn.value = "Check Out";
         }
+    }
 
-        //TOGGLES CHECK IN/OUT BUTTON | FIX create element and insert pdf
-        function CheckInPDF(btnID){
-            var btn = document.getElementById(btnID);
-            if (btn.value == "Check Out"){
-                
-		var pdf = document.createElement("iframe");
-		var modal = document.getElementById('myModal');
+    //On call | clear page contents contents
+    function ClearPage() {
+        document.getElementById("container").innerHTML = "";
+    }
 
-		pdf.setAttribute("id","pdfframe");
-		pdf.scrolling = "auto";
-		pdf.src= "./1297.2 Tablet 2.pdf";
-		document.getElementsByClassName("modal-content")[0].appendChild(pdf);
-		btn.value = "Check In";
-		
-		modal.style.display = "block";
-		
-		window.onclick = function(event) {
-            		if (event.target == modal) {
-                		modal.style.display = "none";
-				document.getElementsByClassName("modal-content")[0].removeChild(pdf);
-            		}
-            	}
-            }else{
-                btn.value = "Check Out";
-            }
-        }
-        
-        function openPDF(){
-            var pdf = "./1297.2 Tablet 2.pdf"
-            document.getElementById("pdfframe").src = pdf;
-        }
+    //On call | start timer in seconds
+    function refreshPage(t) {
+        var rTime = t * 1000;
+        var timout = setTimeout('window.location.reload();', rTime);
+        return timout;
+    }
 
-        function ClearString()
-        {document.getElementById("container").innerHTML = "";}
+</script>
 
-    </script>
+<body onload="loadPage()">
 
-    <body onload="Refresh()">
-        
-        <!-- dynamicaly populated rows and columns -->
-        <div id="container">
-            
-            <div id="txt1"></div>
-            <div id="txt2"></div>
-            <div id="txt3"></div>
-            <div id="txt4"></div>
+    <!-- dynamicaly populated rows and columns -->
+    <div id="container"></div>
+
+    <input type="button" id="btnnn" class="col-1 btn-1" value="Show string" onclick="loadPage()" />&ensp;
+    <input type="button" class="col-1 btn-1" value="Clear String" onclick="ClearPage()" />&ensp;
+
+    <!-- Popup for PDF viewer -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <!-- <span class="close">&times;</span> -->
+            <!-- <p>Some text in the Modal..</p> -->
         </div>
-        <input type="button" id="btnnn" class="col-1 btn-1" value="Show string" onclick="Refresh()"/>&ensp;
-        <input type="button" class="col-1 btn-1" value="Clear String" onclick="ClearString()"/>&ensp;
+    </div>
 
-        <div id="myModal" class="modal">
+</body>
 
-            <!-- Modal content -->
-            <div class="modal-content">
-              <!-- <span class="close">&times;</span> -->
-              <!-- <p>Some text in the Modal..</p> -->
-              <!-- <iframe id="pdfframe" scrolling="auto"></iframe>-->
-            </div>
-          
-          </div>
-
-        <!-- <iframe id="pdfframe" scrolling="auto"></iframe> -->
-
-    </body>
 </html>
