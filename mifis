@@ -2,10 +2,15 @@
 <html>
     <!-- 
         TO DO (temporary notes)
+        - function place new content in specified row
+            - save pdf and txt file
+            - read all txt files
+            - if app mifi = txt mifi use its contents to fill row
+        - button view current user receipt
+        - function add/remove mifi 
         - function status message generator/ color code
             - function progress bar
-        - function place new content in specified row
-        - function add/remove mifi 
+        - Output log | mifi, name, dates(issued, returned)
         - CLEAN CODE. var names, css condensing
     -->
 
@@ -136,9 +141,13 @@
     //MAIN FUNCTION: runs on button click and/or timer (default on)
     function loadPage() {
 
+        //GENERAL PAGE 
+        ClearPage();
+        //refreshPage(3600); //Refresh every (seconds)        
+
         //Changable variables
         var FolderPath = "./output test";
-        var mifis = [
+        var mifis = [ //to be input by user //function to come
             "Mifi 123-123-123",
             "Mifi 321-123-123",
             "Mifi 543-123-123",
@@ -146,53 +155,74 @@
         ];
 
 
+        //Get folder details | read file names, count files
+        var FileNames = ParseDelim(FileList(FolderPath));//move to function populaateFIleData()
+        var totFiles = FileNames.length;//move to function populaateFIleData()
+        
+        //Get pdf data
         //keys: mifi, name, issue_date, return_date
-        var rJson = JSON.parse(ReadFile("./output test/test.json"));//calls ReadFile to read json file
+        var readData = JSON.parse(ReadFile("./output test/test.json"));//calls ReadFile to read json file ////move to function populaateFIleData()
+        
+        
+        /*
+        //On call | returns data for row of specific mifi
+        //fix mifi variable
+        function populateFileData(FolderPath){
+            var FileNames = ParseDelim(FileList(FolderPath));
+            var totFiles = FileNames.length;
 
-        var rList = FileList(FolderPath);
-        var rf = ParseDelim(FileList(FolderPath));
+            for(i=0;i<totFiles;i++){
+
+                //Files in diretory
+                var file1 = FileNames[i];
+                //Mifis listed - DONE listed as var mifis
+                
+                //Read data in 1 txt file
+                var readData = JSON.parse(ReadFile("./output test/" + file1));
+
+                //if app mifi = txt mifi, use its contents
+                if("mifi 987-123-123"==readData.mifi){        //replace mifi[i] with mifi in row by passing in param
+                    return readData; //returns keys: readData.mifi, name, issue_date, return_date
+                    //clmData = readData;
+                }
+            }
+        }
+        */
 
 
+        
+        //HEADER ROW
         var heder = ["Mifi", "Name", "Issue Date", "Return Date", "Status"];
-        var cont = [rJson.name, rJson.issue_date, rJson.return_date];
-
-        ClearPage();
-        //refreshPage(3600); //Refresh every (seconds)
+        //DATA ROWS
+        var cont = [readData.name, readData.issue_date, readData.return_date];
 
         window.resizeTo(screen.availWidth, screen.availHeight);
         window.moveTo(0, 0);
 
-
+        //Build table with parameters
         mkTable(heder, mifis, cont);
 
-
-        //mkTable(hdr,mifis,ct,4);
-
-        //document.getElementById("txt1").innerHTML = rJson[0] + "<br>";
-        //document.getElementById("txt2").innerHTML = rf + "<br>";
-        //document.getElementById("txt2").innerHTML = d + "<br>";
-        // document.getElementById("txt3").innerHTML = rf.sort(compareByColumnIndex) + "<br>";
-        //document.getElementById("txt4").innerHTML = rf[9] + "<br>";
-
-
-
+        //document.getElementById("txt1").innerHTML = file1.mifi;
+        //document.getElementById("txt1").innerHTML = readData.mifi + readData.issue_date;
+        //document.getElementById("txt1").innerHTML = mifis[1];
+        //document.getElementById("txt1").innerHTML = clmData.mifi;
     }
 
     //On call | list folder contents
     function FileList(path) {
-        var fso, f, f1, fc, s, t;
+        var fso, f, f1, fc, s;
+        var fileCnt = 0;
         fso = new ActiveXObject("Scripting.FileSystemObject");
         f = fso.GetFolder(path);
         fc = new Enumerator(f.files);
         s = "";
-        //var i=0;
         while (!fc.atEnd()) {
             var d = new Date(fc.item().datelastmodified);
-            s += (fc.item().name + "\t" + d.toLocaleString());//.datecreated    Thu Feb 21 2019 19:00:58 GMT-0600 (Central Standard Time)
+            s += (fc.item().name);// + "\t" + d.toLocaleString());
             fc.moveNext();
             if (!fc.atEnd()) { s += "\n"; }
         }
-        return s; //use s to test print files
+        return s; //var s returns array
     }
 
     //On call | read a file given location/name
@@ -259,7 +289,8 @@
                     newContent.setAttribute("onclick", "CheckInPDF(this.id)");
                 }else if(ii==4){
                     newDivC.className = "col-1 cDataStyle";
-                    var newContent = document.createTextNode("test");//status message
+                    var sMsg = statusMsg(ct[2]);
+                    var newContent = document.createTextNode(sMsg);//status message
                 }else {
                     newDivC.className = "col-1 cDataStyle";
                     var newContent = document.createTextNode(ct[ii - 1]);//print column items
@@ -272,14 +303,32 @@
         }
     }
 
-    //On call | display status mesage
-    function statusMsg(dates){
+    //On call | Return status mesage
+    function statusMsg(DayDue){
+        var Daytoday = new Date();
         var msg;
-        //if checked out | NOT AVAILABLE
-        //if today | DUE
-        //if today or greater | PAST DUE
-        //if available | AVAILABLE
-        //PROGRESS BAR
+        
+        {// Difference between due date and today
+            var date_diff_indays = function(date) {
+                    dt1 = new Date();//Today
+                    dt2 = new Date(date);//Due Date
+                    return Math.floor((Date.UTC(dt2.getFullYear(), dt2.getMonth(), dt2.getDate()) - 
+                    Date.UTC(dt1.getFullYear(), dt1.getMonth(), dt1.getDate()) ) /(1000 * 60 * 60 * 24));
+                }
+            var DateDiff = date_diff_indays(DayDue);
+        }
+
+        if(DateDiff==0){
+            msg = "DUE TODAY!";
+        }else if(DateDiff < 0){
+            msg = "PAST DUE!";
+        }else if(DateDiff == 1){
+            msg = "DUE TOMORROW";
+        }else if(DateDiff > 0){
+            msg = "Not Available";
+        }else if(isNaN(DateDiff)){
+            msg = "Available";
+        }
         return msg;
     }
 
@@ -339,7 +388,7 @@
             <!-- <p>Some text in the Modal..</p> -->
         </div>
     </div>
-
+<div id="txt1"></div>
 </body>
 
 </html>
