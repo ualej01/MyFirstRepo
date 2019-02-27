@@ -14,6 +14,7 @@
         - CLEAN CODE. var names, css condensing
     -->
 
+<!-- ------------------------------ Application Attributes and Local Compatatibly ------------------------------ -->
 <head>
     <!-- FOR LOCAL COMPATABILITY -->
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
@@ -38,7 +39,7 @@
             VERSION="1.0" 
             WINDOWSTATE="maximize"></HTA:APPLICATION>
 
-    <!-- VISUAL STYLE | Colors | Dimensions -->
+    <!-- ------------------------------ VISUAL STYLE | Colors | Dimensions ------------------------------ -->
     <style type="text/css">
         /**************** General Styling ****************/
         body,
@@ -135,80 +136,48 @@
     </style>
 </head>
 
-<!-- JAVASCRIPT | runs on load-->
+<!-- ------------------------------ JAVASCRIPT | runs on load ------------------------------ -->
 <script language="Jscript" script type="text/javascript">
 
-    //MAIN FUNCTION: runs on button click and/or timer (default on)
+    /////////////////////////////// | MAIN FUNCTION runs on application load | ///////////////////////////////
+    ////// On call: Builds Table from Given data
     function loadPage() {
 
-        //GENERAL PAGE 
+        {//GENERAL PAGE 
         ClearPage();
-        //refreshPage(3600); //Refresh every (seconds)        
-
-        //Changable variables
-        var FolderPath = "./output test";
-        var mifis = [ //to be input by user //function to come
-            "Mifi 123-123-123",
-            "Mifi 321-123-123",
-            "Mifi 543-123-123",
-            "Mifi 987-123-123"
-        ];
-
-
-        //Get folder details | read file names, count files
-        var FileNames = ParseDelim(FileList(FolderPath));//move to function populaateFIleData()
-        var totFiles = FileNames.length;//move to function populaateFIleData()
-        
-        //Get pdf data
-        //keys: mifi, name, issue_date, return_date
-        var readData = JSON.parse(ReadFile("./output test/test.json"));//calls ReadFile to read json file ////move to function populaateFIleData()
-        
-        
-        /*
-        //On call | returns data for row of specific mifi
-        //fix mifi variable
-        function populateFileData(FolderPath){
-            var FileNames = ParseDelim(FileList(FolderPath));
-            var totFiles = FileNames.length;
-
-            for(i=0;i<totFiles;i++){
-
-                //Files in diretory
-                var file1 = FileNames[i];
-                //Mifis listed - DONE listed as var mifis
-                
-                //Read data in 1 txt file
-                var readData = JSON.parse(ReadFile("./output test/" + file1));
-
-                //if app mifi = txt mifi, use its contents
-                if("mifi 987-123-123"==readData.mifi){        //replace mifi[i] with mifi in row by passing in param
-                    return readData; //returns keys: readData.mifi, name, issue_date, return_date
-                    //clmData = readData;
-                }
-            }
-        }
-        */
-
-
-        
-        //HEADER ROW
-        var heder = ["Mifi", "Name", "Issue Date", "Return Date", "Status"];
-        //DATA ROWS
-        var cont = [readData.name, readData.issue_date, readData.return_date];
-
+        //refreshPage(3600); //Refresh every (seconds)     
         window.resizeTo(screen.availWidth, screen.availHeight);
         window.moveTo(0, 0);
+        }
 
+
+        
+        {//Changable variables
+        var FolderPath = "./output test";//Direcory of file store
+        }
+        
+        {//Variables to move
+        
+        
+        //Get folder details | read file names, count files
+        //var FileNames = ParseDelim(FileList(FolderPath));//move to function populaateFIleData()
+        //var totFiles = FileNames.length;//move to function populaateFIleData()
+        }
+        
+        {//Testing
         //Build table with parameters
-        mkTable(heder, mifis, cont);
+        mkTable(FolderPath);
 
         //document.getElementById("txt1").innerHTML = file1.mifi;
         //document.getElementById("txt1").innerHTML = readData.mifi + readData.issue_date;
         //document.getElementById("txt1").innerHTML = mifis[1];
         //document.getElementById("txt1").innerHTML = clmData.mifi;
-    }
+        }
+          
+        }
 
-    //On call | list folder contents
+    /////////////////////////////// | Read,Write Functions | ///////////////////////////////
+    //////On call | list folder contents
     function FileList(path) {
         var fso, f, f1, fc, s;
         var fileCnt = 0;
@@ -225,7 +194,7 @@
         return s; //var s returns array
     }
 
-    //On call | read a file given location/name
+    //////On call | read a file given location/name
     function ReadFile(file) {
         var fso, f, fRead;
         fso = new ActiveXObject("Scripting.FileSystemObject");
@@ -235,7 +204,7 @@
         return fRead;
     }
 
-    //On call | parse tab delmited text
+    //////On call | parse tab delmited text
     function ParseDelim(content) {
         var aRead, lRead, wRead;
         var words = [], tRow = [];
@@ -249,15 +218,34 @@
         return tRow; //return multidim array of words/"cells"
     }
 
-    // //On call | convert date format to d/d/d time
+    // ////// On call | convert date format to d/d/d time
     // function cnvDate(d){
 	//             var cDate = new Date(d);
 	//             var convertedDate = cDate.toLocaleString();
 	//             return convertedDate;
-	//         }
+	//         }   
 
-    //On call | make table (array:header labels | array: mifis | array: json data)
-    function mkTable(h, mifi, ct) {
+    /////////////////////////////// | BUILD TABLE FUNCTIONS | ///////////////////////////////
+    ////// On call | make table (array:header labels | array: mifis | array: json data)
+    function mkTable(FolderPath) {
+      var mifi = [ //to be input by user //function to come //change numbers in json files to test
+            "MIFI 210-485-9344",
+            "MIFI 321-123-123",
+            "MIFI 543-123-123",
+            "MIFI 987-123-123"
+        ];
+      //HEADER ROW
+      var h = ["Mifi", "Name", "Issue Date", "Return Date", "Status"];
+      var readData = JSON.parse(ReadFile("./output test/test.json"));//keys: mifi, name, issue_date, return_date
+      //DATA ROWS
+      
+      /*
+      var readData = GetFileData(FolderPath, mifi);
+      
+      */
+      
+      var ct = [readData.name, readData.issue_date, readData.return_date];
+      
         for (i = 0; i <= mifi.length; i++) {
             //CREATE ROW
             var newDiv = document.createElement("div");
@@ -294,6 +282,7 @@
                 }else {
                     newDivC.className = "col-1 cDataStyle";
                     var newContent = document.createTextNode(ct[ii - 1]);//print column items
+		    
                 }
                 //else if(ii==4) display status message
 
@@ -303,7 +292,29 @@
         }
     }
 
-    //On call | Return status mesage
+        ////// On call | returns data for row of specific mifi
+        function GetFileData(FolderPath, mifi){
+            var FileNames = ParseDelim(FileList(FolderPath));
+            var totFiles = FileNames.length;
+
+            for(i=0;i<totFiles;i++){
+
+                //Files in diretory
+                var file1 = FileNames[i];
+                //Mifis listed - DONE listed as var mifis
+                
+                //Read data in 1 txt file
+                var readData = JSON.parse(ReadFile("./output test/" + file1));
+
+                //if app mifi = txt mifi, use its contents
+                if(mifi==readData.mifi){
+                    return readData; //returns keys: readData.mifi, name, issue_date, return_date
+                    //clmData = readData;
+                }
+            }
+        } 
+
+    ////// On call | Return status mesage
     function statusMsg(DayDue){
         var Daytoday = new Date();
         var msg;
@@ -332,7 +343,7 @@
         return msg;
     }
 
-    //On call | open pdf document popup
+    ////// On call | open pdf document popup
     function CheckInPDF(btnID) {
         var btn = document.getElementById(btnID);
         if (btn.value == "Check Out") {
@@ -359,12 +370,12 @@
         }
     }
 
-    //On call | clear page contents contents
+    ////// On call | clear page contents contents
     function ClearPage() {
         document.getElementById("container").innerHTML = "";
     }
 
-    //On call | start timer in seconds
+    ////// On call | start timer in seconds
     function refreshPage(t) {
         var rTime = t * 1000;
         var timout = setTimeout('window.location.reload();', rTime);
@@ -373,6 +384,7 @@
 
 </script>
 
+<!-- ------------------------------ HTML Elements ------------------------------ -->
 <body onload="loadPage()">
 
     <!-- dynamicaly populated rows and columns -->
